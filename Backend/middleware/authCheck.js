@@ -1,11 +1,18 @@
-import cookieParser from "cookie-parser"
+import cookieParser from "cookie-parser";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
+
 export const authCheck = (req, res, next) => {
+  const token = req.cookies.accessToken;
   try {
-    if(!req.cookie.accessToken){
-        return res.status(404).send("No access-token")
+        jwt.verify(token, process.env.SECRET_KEY)
+        res.status(200).send("Token found")
+        
     }
-    res.status(200).send("access-Token is available")
-    next()
-  } 
-  catch (err) {}
+    catch (err) {
+        console.log("Token verification failed:", err.message);
+        return res.status(404).send("Token Not found")
+  }
+  next()
 };

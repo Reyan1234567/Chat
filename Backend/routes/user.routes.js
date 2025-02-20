@@ -22,34 +22,35 @@ router.post("/login", async (req, res) => {
     if (!compareResult) {
       return res.status(404).send("Invalid credentails");
     } else {
+      res.cookie("user_id",User._id)
       const accessToken = jwt.sign(
-        { userId: body._id},
+        { userId: User._id},
         process.env.SECRET_KEY,
         { expiresIn: "1h" }
       );
       const refreshToken = jwt.sign(
-        { userId: body._id},
+        { userId: User._id},
         process.env.REF_SECRET_KEY,
         { expiresIn: "7d" }
       );
       res.cookie("accessToken", accessToken, {
-        expires: "1h",
+        expiresIn: "1h",
         httpOnly: true,
         secure: true,
       });
       res.cookie("refreshToken", refreshToken, {
-        expires: "3d",
+        expiresIn: "3d",
         httpOnly: true,
         secure: true,
       });
       await refresh.create({
-        userId: user._id,
+        userId: User._id,
         token: refreshToken,
       });
-      res.status(201).json(accessToken, refreshToken);
+      res.status(201).json({"accessToken": accessToken, "refreshToken":refreshToken});
     }
   } catch (err) {
-    res.status(500).send(err);
+    res.status(500).send(err.message);
     console.log(err);
   }
 });
